@@ -2,12 +2,12 @@
 	<div v-if="dependenciesSatisfied">
 		<div v-for="childField in field.fields">
 			<component
-				:is="'form-' + childField.component"
-                :errors="errors"
-				:resource-id="resourceId"
-				:resource-name="resourceName"
-				:field="childField"
-				:ref="'field-' + childField.attribute"
+					:is="'form-' + childField.component"
+					:errors="errors"
+					:resource-id="resourceId"
+					:resource-name="resourceName"
+					:field="childField"
+					:ref="'field-' + childField.attribute"
 			/>
 		</div>
 	</div>
@@ -41,17 +41,16 @@
 				callback = callback || null;
 				root.$children.forEach(component => {
 					if (this.componentIsDependency(component)) {
-
+						let attributeName = !!component.field.sortableUriKey ? component.field.sortableUriKey : component.field.attribute
 						// @todo: change `findWatchableComponentAttribute` to return initial state(s) of current dependency.
 						let attribute = this.findWatchableComponentAttribute(component),
-							initial_value = component.field.value; // @note: quick-fix for issue #88
-
+								initial_value = component.field.value; // @note: quick-fix for issue #88
 						component.$watch(attribute, (value) => {
 							// @todo: move to reactive factory
 							if (attribute === 'selectedResource') {
 								value = (value && value.value) || null;
 							}
-							this.dependencyValues[component.field.attribute] = value;
+							this.dependencyValues[attributeName] = value;
 							// @todo: changed value as argument for `updateDependencyStatus`
 							this.updateDependencyStatus()
 						}, {immediate: true});
@@ -63,7 +62,7 @@
 						}
 
 						// @todo: replace with `updateDependencyStatus(initial_value)` and let it resolve dependency state
-						this.dependencyValues[component.field.attribute] = initial_value;
+						this.dependencyValues[attributeName] = initial_value;
 					}
 
 					this.registerDependencyWatchers(component)
@@ -96,7 +95,7 @@
 				}
 
 				for (let dependency of this.field.dependencies) {
-					if(component.field.attribute === dependency.field) {
+					if(component.field.attribute === dependency.field || component.field.sortableUriKey === dependency.field) {
 						return true;
 					}
 				}
@@ -107,7 +106,6 @@
 			// @todo: align this method with the responsibility of updating the dependency, not verifying the dependency "values"
 			updateDependencyStatus() {
 				for (let dependency of this.field.dependencies) {
-
 					let dependencyValue = this.dependencyValues[dependency.field];
 					if(dependency.hasOwnProperty('empty') && !dependencyValue) {
 						this.dependenciesSatisfied = true;
