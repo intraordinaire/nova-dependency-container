@@ -130,6 +130,10 @@ class NovaDependencyContainer extends Field
      */
     public function resolveForDisplay($resource, $attribute = null)
     {
+        if (is_array($resource)) {
+            $resource = (object)$resource;
+        }
+
         foreach ($this->meta['fields'] as $field) {
             $field->resolveForDisplay($resource);
         }
@@ -159,7 +163,7 @@ class NovaDependencyContainer extends Field
                     continue;
                 }
                 // @todo: quickfix for MorphTo
-                $morphable_attribute = $resource->getAttribute($dependency['property'].'_type');
+                $morphable_attribute = data_get($resource, $dependency['property'].'_type');
                 if($morphable_attribute !== null && Str::endsWith($morphable_attribute, '\\'.$dependency['value'])) {
                     $this->meta['dependencies'][$index]['satisfied'] = true;
                     continue;
